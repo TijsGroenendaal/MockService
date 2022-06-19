@@ -24,6 +24,7 @@ public static class MockServiceContextSeed
             await SeedSchedules(context);
             await LinkScheduleGroupToCompetenceScheduleGroup(context);
             await LinkOrganizationalUnitScheduleGroup(context);
+            await LinkScheduleGroupScheduleToScheduleGroup(context);
         }
         catch (Exception e)
         {
@@ -256,6 +257,26 @@ public static class MockServiceContextSeed
         // Add MD1 schedule group to VVLEINO
         scheduleGroupMd1.OrganizationalUnits.Add(organizationalUnitScheduleGroupVvleino!);
         await context.SaveChangesAsync();
+    }
+
+    private static async Task LinkScheduleGroupScheduleToScheduleGroup(MockServiceContext context)
+    {
+        var linkData = await File.ReadAllTextAsync(BasePath + "scheduleGroupSchedulesToScheduleGroups.json");
+        dynamic links =  JsonSerializer.Deserialize<List<dynamic>>(linkData)!;
+        foreach (var link in links)
+        {
+            Guid scheduleGroupScheduleId = ((JsonElement) link).GetProperty("ScheduleGroupScheduleId").GetGuid();
+            Guid scheduleGroupId = ((JsonElement) link).GetProperty("ScheduleGroupId").GetGuid();
+            var scheduleGroupSchedule = await context.ScheduleGroupSchedule.FindAsync(scheduleGroupScheduleId);
+            var scheduleGroup = await context.ScheduleGroup.FindAsync(scheduleGroupId);
+            if (scheduleGroup.ScheduleGroupSchedules == null)
+            {
+                scheduleGroup.ScheduleGroupSchedules = new List<ScheduleGroupSchedule>();
+            }
+            scheduleGroup.ScheduleGroupSchedules.Add(scheduleGroupSchedule);
+        }
+        await context.SaveChangesAsync();
+        
     }
 
 }
