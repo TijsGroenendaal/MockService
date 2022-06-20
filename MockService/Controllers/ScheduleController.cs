@@ -249,10 +249,13 @@ namespace MockService.Controllers
             Schedule newSchedule = new Schedule
             {
                 Id = Guid.NewGuid(),
+                ScheduleType = schedule.ScheduleType,
                 EmployeeContract = contract,
                 ScheduleGroup = scheduleGroup,
                 Start = schedule.Start,
-                End = schedule.End
+                End = schedule.End,
+                Date = schedule.Date,
+                HasChanged = false
             };
 
             await _context.Schedule.AddAsync(newSchedule);
