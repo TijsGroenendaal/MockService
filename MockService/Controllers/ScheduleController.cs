@@ -53,7 +53,7 @@ namespace MockService.Controllers
         // GET: api/Schedule/ids
         // BODY: {"scheduleIds": [id1, id2, ...]}
         [HttpPost("ids")]
-        public async Task<ActionResult<IEnumerable<TradeOfferScheduleDTO>>> GetScheduleByIds(
+        public async Task<ActionResult<IEnumerable<TradeOfferScheduleDTO>>> GetScheduleByWhereInFutureIds(
             [FromBody] IEnumerable<Guid> scheduleIds)
         {
             var schedules = await _context.Schedule
@@ -188,6 +188,17 @@ namespace MockService.Controllers
                 .Where(c => c.EmployeeContract.Id == id &&
                             c.Start.ToUniversalTime().Date == date.ToUniversalTime().Date)
                 .ToListAsync();
+        }
+        
+        [HttpPost("simple/ids")]
+        public async Task<ActionResult<IEnumerable<Schedule>>> GetSchedulesByIdsSimple(IEnumerable<Guid> ids)
+        {
+            return await _context.Schedule
+                .Where(c => ids.Contains(c.Id))
+                .Include(c => c.EmployeeContract)
+                .Include(c => c.ScheduleGroup.CompetenceScheduleGroups).ThenInclude(c => c.Competence)
+                .ToListAsync();
+
         }
 
         // PUT: api/Schedule/5
